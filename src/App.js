@@ -17,7 +17,7 @@ function AppContent() {
   const [hrRequests, setHRRequests] = useState([]);
   const [budgetRequests, setBudgetRequests] = useState([]);
 
-  // 从 LocalStorage 加载请求数据
+  // Load request data from LocalStorage
   useEffect(() => {
     const storedRequests = localStorage.getItem('requests');
     if (storedRequests) setRequests(JSON.parse(storedRequests));
@@ -29,7 +29,7 @@ function AppContent() {
     if (storedBudgetRequests) setBudgetRequests(JSON.parse(storedBudgetRequests));
   }, []);
 
-  // 保存数据到 LocalStorage
+  // Save data to LocalStorage
   useEffect(() => {
     if (requests.length > 0) localStorage.setItem('requests', JSON.stringify(requests));
   }, [requests]);
@@ -42,7 +42,7 @@ function AppContent() {
     if (budgetRequests.length > 0) localStorage.setItem('budgetRequests', JSON.stringify(budgetRequests));
   }, [budgetRequests]);
 
-  // 更新和添加请求函数
+  // Update and add request functions
   const addRequest = (newRequest) => setRequests([...requests, { ...newRequest, comment: '', status: 'Pending', team: '' }]);
   const addHRRequest = (newHRRequest) => setHRRequests([...hrRequests, { ...newHRRequest, status: 'Submitted' }]);
   const addBudgetRequest = (newBudgetRequest) => setBudgetRequests([...budgetRequests, newBudgetRequest]);
@@ -68,7 +68,7 @@ function AppContent() {
     localStorage.setItem('requests', JSON.stringify(updatedRequests));
   };
 
-  // 根据用户角色渲染页面
+  // Render pages based on user role
   const renderRoleBasedRoutes = () => {
     switch (role) {
       case 'Customer Service':
