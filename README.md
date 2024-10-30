@@ -1,6 +1,9 @@
 # Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a project for the SEP module. 
+Demo: [https://sep-project-2024.netlify.app/](https://sep-project-2024.netlify.app/)
+Username: CS, PM, SM, SC, ST
+Password: 123 (for all users)
 
 ## Available Scripts
 

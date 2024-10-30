@@ -1,16 +1,18 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // Import useAuth from AuthContext
 
-function Login({ handleLogin }) {
+function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth(); // Use login from AuthContext
   const navigate = useNavigate();
 
   const onSubmit = (e) => {
     e.preventDefault();
-    handleLogin(username, password);
-    navigate('/'); // 登录后跳转到首页或默认页面
+    login(username, password); // Call login instead of handleLogin
+    navigate('/'); // Navigate to the main page after login
   };
 
   return (

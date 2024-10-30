@@ -48,7 +48,7 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
           <h2 className="text-2xl font-bold mb-4">Staff Recruitment Request</h2>
           <form onSubmit={handleHRSubmit} className="space-y-4">
             <div>
-              <label className="block">Select Request ID:</label>
+              <label className="block">Select Event:</label>
               <select
                 value={selectedRequestId}
                 onChange={(e) => setSelectedRequestId(e.target.value)}
@@ -182,7 +182,7 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
           <ul className="space-y-4">
             {budgetRequests.map((budgetRequest, index) => (
               <li key={index} className="p-4 border rounded-md bg-gray-50">
-                <p><strong>Request ID:</strong> {budgetRequest.requestId}</p>
+                <p><strong>Event:</strong> {budgetRequest.requestId}</p>
                 <p><strong>Budget Amount:</strong> {budgetRequest.amount}</p>
                 <p><strong>Reason:</strong> {budgetRequest.reason}</p>
                 <p><strong>Status:</strong> {budgetRequest.status}</p>

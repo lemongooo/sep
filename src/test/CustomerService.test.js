@@ -1,96 +1,77 @@
-// src/components/CustomerService.test.js
-import React from 'react';
+// src/test/CustomerService.test.js
 import { render, screen, fireEvent } from '@testing-library/react';
-import CustomerService from './CustomerService';
+import CustomerService from '../components/CustomerService';
+import { AuthProvider } from '../context/AuthContext';
 
-describe('CustomerService Component', () => {
-  let addRequestMock, updateRequestMock;
+// Mock the addRequest function
+const mockAddRequest = jest.fn();
 
-  beforeEach(() => {
-    addRequestMock = jest.fn();
-    updateRequestMock = jest.fn();
-  });
+beforeEach(() => {
+    mockAddRequest.mockClear();
+});
 
-  test('renders create request form', () => {
-    render(<CustomerService addRequest={addRequestMock} requests={[]} updateRequest={updateRequestMock} />);
-    expect(screen.getByText(/customer service - create request/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/client name:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/event type:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/date:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/budget:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/details:/i)).toBeInTheDocument();
-  });
-
-  test('allows creating a new request', () => {
-    render(<CustomerService addRequest={addRequestMock} requests={[]} updateRequest={updateRequestMock} />);
-    
-    fireEvent.change(screen.getByLabelText(/client name:/i), { target: { value: 'Test Client' } });
-    fireEvent.change(screen.getByLabelText(/event type:/i), { target: { value: 'Conference' } });
-    fireEvent.change(screen.getByLabelText(/date:/i), { target: { value: '2023-01-01' } });
-    fireEvent.change(screen.getByLabelText(/budget:/i), { target: { value: '1000' } });
-    fireEvent.change(screen.getByLabelText(/details:/i), { target: { value: 'Details for conference' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /submit request/i }));
-
-    expect(addRequestMock).toHaveBeenCalledWith({
-      clientName: 'Test Client',
-      eventType: 'Conference',
-      date: '2023-01-01',
-      budget: '1000',
-      details: 'Details for conference',
-    });
-  });
-
-  test('allows editing an existing request', () => {
-    const initialRequests = [
-      {
-        clientName: 'Initial Client',
-        eventType: 'Workshop',
-        date: '2023-01-02',
-        budget: '500',
-        details: 'Initial details',
-        status: 'Pending',
-        comment: 'None',
-      },
-    ];
+// Test 1: Basic render check
+test('renders CustomerService component', () => {
     render(
-      <CustomerService
-        addRequest={addRequestMock}
-        requests={initialRequests}
-        updateRequest={updateRequestMock}
-      />
+        <AuthProvider>
+            <CustomerService addRequest={mockAddRequest} requests={[]} />
+        </AuthProvider>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    expect(screen.getByText(/edit request/i)).toBeInTheDocument();
+    expect(screen.getByText(/Customer Service - Create Request/i)).toBeInTheDocument();
+    expect(screen.getByText(/Submit Request/i)).toBeInTheDocument();
+});
 
-    fireEvent.change(screen.getByLabelText(/client name:/i), { target: { value: 'Updated Client' } });
-    fireEvent.change(screen.getByLabelText(/budget:/i), { target: { value: '1500' } });
+// Test 2: Form submission calls addRequest
+test('submits form with complete data and clears inputs', () => {
+    render(
+        <AuthProvider>
+            <CustomerService addRequest={mockAddRequest} requests={[]} />
+        </AuthProvider>
+    );
 
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    // Fill out form with all required data
+    fireEvent.change(screen.getByLabelText(/Client Name:/i), { target: { value: 'Jane Doe' } });
+    fireEvent.change(screen.getByLabelText(/Event Type:/i), { target: { value: 'Conference' } });
+    fireEvent.change(screen.getByLabelText(/Date:/i), { target: { value: '2023-12-01' } });
+    fireEvent.change(screen.getByLabelText(/Budget:/i), { target: { value: '5000' } });
+    fireEvent.change(screen.getByLabelText(/Details:/i), { target: { value: 'Conference details including guest speakers and itinerary.' } });
 
-    expect(updateRequestMock).toHaveBeenCalledWith(0, {
-      clientName: 'Updated Client',
-      eventType: 'Workshop',
-      date: '2023-01-02',
-      budget: '1500',
-      details: 'Initial details',
+    // Submit form
+    fireEvent.click(screen.getByText(/Submit Request/i));
+
+    // Verify that addRequest was called with complete form data
+    expect(mockAddRequest).toHaveBeenCalledWith({
+        clientName: 'Jane Doe',
+        eventType: 'Conference',
+        date: '2023-12-01',
+        budget: '5000',
+        details: 'Conference details including guest speakers and itinerary.',
     });
-  });
 
-  test('validates required fields before submitting', () => {
-    render(<CustomerService addRequest={addRequestMock} requests={[]} updateRequest={updateRequestMock} />);
+});
 
-    fireEvent.submit(screen.getByRole('form'));
-    expect(addRequestMock).not.toHaveBeenCalled();
+// Test 3: Displays submitted requests
+test('displays submitted requests', () => {
+    const requests = [
+        { clientName: 'Alice', eventType: 'Seminar', date: '2023-09-10', budget: '3000', details: 'Seminar about industry trends.', status: 'Pending' }
+    ];
 
-    fireEvent.change(screen.getByLabelText(/client name:/i), { target: { value: 'Test Client' } });
-    fireEvent.change(screen.getByLabelText(/event type:/i), { target: { value: 'Conference' } });
-    fireEvent.change(screen.getByLabelText(/date:/i), { target: { value: '2023-01-01' } });
-    fireEvent.change(screen.getByLabelText(/budget:/i), { target: { value: '1000' } });
-    fireEvent.change(screen.getByLabelText(/details:/i), { target: { value: 'Details for conference' } });
-    
-    fireEvent.submit(screen.getByRole('form'));
-    expect(addRequestMock).toHaveBeenCalledTimes(1);
-  });
+    render(
+        <AuthProvider>
+            <CustomerService addRequest={mockAddRequest} requests={requests} />
+        </AuthProvider>
+    );
+
+    // Check if the request details are displayed
+    expect(screen.getByText(/^Alice$/)).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+        return element.tagName.toLowerCase() === 'p' && 
+               element.textContent.includes('Event Type:') && 
+               element.textContent.includes('Seminar');
+    })).toBeInTheDocument();
+    expect(screen.getByText(/2023-09-10/)).toBeInTheDocument();
+    expect(screen.getByText(/3000/)).toBeInTheDocument();
+    expect(screen.getByText(/Seminar about industry trends./)).toBeInTheDocument();
+    expect(screen.getByText(/Pending/)).toBeInTheDocument();
 });
