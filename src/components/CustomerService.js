@@ -1,0 +1,143 @@
+// src/components/CustomerService.js
+import React, { useState } from 'react';
+
+function CustomerService({ addRequest, requests, updateRequest }) {
+  const [formData, setFormData] = useState({
+    clientName: '',
+    eventType: '',
+    date: '',
+    budget: '',
+    details: '',
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isEditing) {
+      updateRequest(editIndex, formData);
+      setIsEditing(false);
+      setEditIndex(null);
+    } else {
+      addRequest(formData);
+    }
+    setFormData({
+      clientName: '',
+      eventType: '',
+      date: '',
+      budget: '',
+      details: '',
+    });
+  };
+
+  const handleEdit = (index) => {
+    setFormData(requests[index]);
+    setIsEditing(true);
+    setEditIndex(index);
+  };
+
+  return (
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
+      <div className="bg-white p-8 rounded-md shadow-md w-full max-w-md mb-8">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {isEditing ? 'Edit Request' : 'Customer Service - Create Request'}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Client Name:</label>
+            <input
+              type="text"
+              name="clientName"
+              value={formData.clientName}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Event Type:</label>
+            <input
+              type="text"
+              name="eventType"
+              value={formData.eventType}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date:</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Budget:</label>
+            <input
+              type="number"
+              name="budget"
+              value={formData.budget}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Details:</label>
+            <textarea
+              name="details"
+              value={formData.details}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            />
+          </div>
+          <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+            {isEditing ? 'Save Changes' : 'Submit Request'}
+          </button>
+        </form>
+      </div>
+
+      {/* 显示已创建的请求 */}
+      <div className="w-full max-w-2xl bg-white p-6 rounded-md shadow-md">
+        <h3 className="text-xl font-bold mb-4">Submitted Requests</h3>
+        {requests.length === 0 ? (
+          <p className="text-gray-500">No requests submitted yet.</p>
+        ) : (
+          <ul className="space-y-4">
+            {requests.map((request, index) => (
+              <li key={index} className="p-4 border border-gray-300 rounded-md">
+                <p><strong>Client Name:</strong> {request.clientName}</p>
+                <p><strong>Event Type:</strong> {request.eventType}</p>
+                <p><strong>Date:</strong> {request.date}</p>
+                <p><strong>Budget:</strong> {request.budget}</p>
+                <p><strong>Details:</strong> {request.details}</p>
+                <p><strong>Comment:</strong> {request.comment || 'None'}</p>
+                <p><strong>Status:</strong> {request.status || 'Pending'}</p>
+                <button
+                  onClick={() => handleEdit(index)}
+                  className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
+                >
+                  Edit
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default CustomerService;
