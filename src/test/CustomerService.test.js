@@ -30,12 +30,11 @@ test('submits form with complete data and clears inputs', () => {
         </AuthProvider>
     );
 
-    // Fill out form with all required data
     fireEvent.change(screen.getByLabelText(/Client Name:/i), { target: { value: 'Jane Doe' } });
     fireEvent.change(screen.getByLabelText(/Event Type:/i), { target: { value: 'Conference' } });
     fireEvent.change(screen.getByLabelText(/Date:/i), { target: { value: '2023-12-01' } });
     fireEvent.change(screen.getByLabelText(/Budget:/i), { target: { value: '5000' } });
-    fireEvent.change(screen.getByLabelText(/Details:/i), { target: { value: 'Conference details including guest speakers and itinerary.' } });
+    fireEvent.change(screen.getByLabelText(/Details:/i), { target: { value: 'Conference details including guest speakers and itinerary.' } });    
 
     // Submit form
     fireEvent.click(screen.getByText(/Submit Request/i));

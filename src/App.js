@@ -46,7 +46,13 @@ function AppContent() {
   const addRequest = (newRequest) => setRequests([...requests, { ...newRequest, comment: '', status: 'Pending', team: '' }]);
   const addHRRequest = (newHRRequest) => setHRRequests([...hrRequests, { ...newHRRequest, status: 'Submitted' }]);
   const addBudgetRequest = (newBudgetRequest) => setBudgetRequests([...budgetRequests, newBudgetRequest]);
-
+  
+  const updateRequestStatus = (index, status) => {
+    const updatedRequests = [...requests];
+    updatedRequests[index].status = status;
+    setRequests(updatedRequests);
+    localStorage.setItem('requests', JSON.stringify(updatedRequests));
+  };
   const updateHRRequestStatus = (index, status) => {
     const updatedHRRequests = [...hrRequests];
     updatedHRRequests[index].status = status;
@@ -74,7 +80,7 @@ function AppContent() {
       case 'Customer Service':
         return <Route path="/" element={<CustomerService requests={requests} addRequest={addRequest} />} />;
       case 'Senior Customer Service':
-        return <Route path="/" element={<SeniorCustomerService requests={requests} />} />;
+        return <Route path="/" element={<SeniorCustomerService requests={requests} updateRequestStatus={updateRequestStatus} />} />;
       case 'Production Manager':
         return (
           <>

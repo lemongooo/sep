@@ -33,8 +33,9 @@ function CustomerService({ addRequest, requests }) {
         <h2 className="text-2xl font-bold mb-6 text-center">Customer Service - Create Request</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Client Name:</label>
+            <label htmlFor="clientName" className="block text-sm font-medium text-gray-700">Client Name:</label>
             <input
+              id="clientName"
               type="text"
               name="clientName"
               value={formData.clientName}
@@ -44,8 +45,9 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Event Type:</label>
+            <label htmlFor="eventType" className="block text-sm font-medium text-gray-700">Event Type:</label>
             <input
+              id="eventType"
               type="text"
               name="eventType"
               value={formData.eventType}
@@ -55,8 +57,9 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Date:</label>
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date:</label>
             <input
+              id="date"
               type="date"
               name="date"
               value={formData.date}
@@ -66,8 +69,9 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Budget:</label>
+            <label htmlFor="budget" className="block text-sm font-medium text-gray-700">Budget:</label>
             <input
+              id="budget"
               type="number"
               name="budget"
               value={formData.budget}
@@ -77,8 +81,9 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Details:</label>
+            <label htmlFor="details" className="block text-sm font-medium text-gray-700">Details:</label>
             <textarea
+              id="details"
               name="details"
               value={formData.details}
               onChange={handleChange}
