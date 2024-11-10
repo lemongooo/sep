@@ -1,7 +1,9 @@
 // src/components/SeniorCustomerService.js
-import React from "react";
+import React, { useContext } from "react";
+import { RequestsContext } from "../context/RequestContext";
 
-function SeniorCustomerService({ requests, updateRequestStatus }) {
+function SeniorCustomerService() {
+  const { requests, updateRequestStatus } = useContext(RequestsContext);
   const handleApprove = (index) => {
     updateRequestStatus(index, "Approved by SCS");
   };

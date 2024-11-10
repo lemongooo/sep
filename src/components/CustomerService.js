@@ -1,13 +1,15 @@
 // src/components/CustomerService.js
-import React, { useState } from 'react';
+import React, { useContext, useState } from "react";
+import { RequestsContext } from "../context/RequestContext";
 
-function CustomerService({ addRequest, requests }) {
+function CustomerService() {
+  const { requests, addRequest } = useContext(RequestsContext);
   const [formData, setFormData] = useState({
-    clientName: '',
-    eventType: '',
-    date: '',
-    budget: '',
-    details: '',
+    clientName: "",
+    eventType: "",
+    date: "",
+    budget: "",
+    details: "",
   });
 
   const handleChange = (e) => {
@@ -19,21 +21,28 @@ function CustomerService({ addRequest, requests }) {
     e.preventDefault();
     addRequest(formData);
     setFormData({
-      clientName: '',
-      eventType: '',
-      date: '',
-      budget: '',
-      details: '',
+      clientName: "",
+      eventType: "",
+      date: "",
+      budget: "",
+      details: "",
     });
   };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white p-8 rounded-md shadow-md w-full max-w-md mb-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">Customer Service - Create Request</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Customer Service - Create Request
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="clientName" className="block text-sm font-medium text-gray-700">Client Name:</label>
+            <label
+              htmlFor="clientName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Client Name:
+            </label>
             <input
               id="clientName"
               type="text"
@@ -45,7 +54,12 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label htmlFor="eventType" className="block text-sm font-medium text-gray-700">Event Type:</label>
+            <label
+              htmlFor="eventType"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Event Type:
+            </label>
             <input
               id="eventType"
               type="text"
@@ -57,7 +71,12 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date:</label>
+            <label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Date:
+            </label>
             <input
               id="date"
               type="date"
@@ -69,7 +88,12 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label htmlFor="budget" className="block text-sm font-medium text-gray-700">Budget:</label>
+            <label
+              htmlFor="budget"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Budget:
+            </label>
             <input
               id="budget"
               type="number"
@@ -81,7 +105,12 @@ function CustomerService({ addRequest, requests }) {
             />
           </div>
           <div>
-            <label htmlFor="details" className="block text-sm font-medium text-gray-700">Details:</label>
+            <label
+              htmlFor="details"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Details:
+            </label>
             <textarea
               id="details"
               name="details"
@@ -91,7 +120,10 @@ function CustomerService({ addRequest, requests }) {
               className="mt-1 p-2 w-full border border-gray-300 rounded-md"
             />
           </div>
-          <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+          >
             Submit Request
           </button>
         </form>
@@ -105,13 +137,27 @@ function CustomerService({ addRequest, requests }) {
           <ul className="space-y-4">
             {requests.map((request, index) => (
               <li key={index} className="p-4 border border-gray-300 rounded-md">
-                <p><strong>Client Name:</strong> {request.clientName}</p>
-                <p><strong>Event Type:</strong> {request.eventType}</p>
-                <p><strong>Date:</strong> {request.date}</p>
-                <p><strong>Budget:</strong> {request.budget}</p>
-                <p><strong>Details:</strong> {request.details}</p>
-                <p><strong>Comment:</strong> {request.comment || 'None'}</p>
-                <p><strong>Status:</strong> {request.status || 'Pending'}</p>
+                <p>
+                  <strong>Client Name:</strong> {request.clientName}
+                </p>
+                <p>
+                  <strong>Event Type:</strong> {request.eventType}
+                </p>
+                <p>
+                  <strong>Date:</strong> {request.date}
+                </p>
+                <p>
+                  <strong>Budget:</strong> {request.budget}
+                </p>
+                <p>
+                  <strong>Details:</strong> {request.details}
+                </p>
+                <p>
+                  <strong>Comment:</strong> {request.comment || "None"}
+                </p>
+                <p>
+                  <strong>Status:</strong> {request.status || "Pending"}
+                </p>
               </li>
             ))}
           </ul>

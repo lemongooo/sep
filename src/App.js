@@ -1,15 +1,22 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import CustomerService from './components/CustomerService';
-import Financial from './components/Financial';
-import SeniorCustomerService from './components/SeniorCustomerService';
-import TaskAllocate from './components/TaskAllocate';
-import ProductionManager from './components/ProductionManager';
-import HR from './components/HR';
-import Login from './components/Login';
-import Subteam from './components/Subteam';
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Link,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import CustomerService from "./components/CustomerService";
+import Financial from "./components/Financial";
+import SeniorCustomerService from "./components/SeniorCustomerService";
+import TaskAllocate from "./components/TaskAllocate";
+import ProductionManager from "./components/ProductionManager";
+import HR from "./components/HR";
+import Login from "./components/Login";
+import Subteam from "./components/Subteam";
+import { RequestsProvider } from "./context/RequestContext";
 
 function AppContent() {
   const { isAuthenticated, role, logout } = useAuth();
@@ -19,69 +26,72 @@ function AppContent() {
 
   // Load request data from LocalStorage
   useEffect(() => {
-    const storedRequests = localStorage.getItem('requests');
+    const storedRequests = localStorage.getItem("requests");
     if (storedRequests) setRequests(JSON.parse(storedRequests));
 
-    const storedHRRequests = localStorage.getItem('hrRequests');
+    const storedHRRequests = localStorage.getItem("hrRequests");
     if (storedHRRequests) setHRRequests(JSON.parse(storedHRRequests));
 
-    const storedBudgetRequests = localStorage.getItem('budgetRequests');
-    if (storedBudgetRequests) setBudgetRequests(JSON.parse(storedBudgetRequests));
+    const storedBudgetRequests = localStorage.getItem("budgetRequests");
+    if (storedBudgetRequests)
+      setBudgetRequests(JSON.parse(storedBudgetRequests));
   }, []);
 
   // Save data to LocalStorage
   useEffect(() => {
-    if (requests.length > 0) localStorage.setItem('requests', JSON.stringify(requests));
+    if (requests.length > 0)
+      localStorage.setItem("requests", JSON.stringify(requests));
   }, [requests]);
 
   useEffect(() => {
-    if (hrRequests.length > 0) localStorage.setItem('hrRequests', JSON.stringify(hrRequests));
+    if (hrRequests.length > 0)
+      localStorage.setItem("hrRequests", JSON.stringify(hrRequests));
   }, [hrRequests]);
 
   useEffect(() => {
-    if (budgetRequests.length > 0) localStorage.setItem('budgetRequests', JSON.stringify(budgetRequests));
+    if (budgetRequests.length > 0)
+      localStorage.setItem("budgetRequests", JSON.stringify(budgetRequests));
   }, [budgetRequests]);
 
   // Update and add request functions
-  const addRequest = (newRequest) => setRequests([...requests, { ...newRequest, comment: '', status: 'Pending', team: '' }]);
-  const addHRRequest = (newHRRequest) => setHRRequests([...hrRequests, { ...newHRRequest, status: 'Submitted' }]);
-  const addBudgetRequest = (newBudgetRequest) => setBudgetRequests([...budgetRequests, newBudgetRequest]);
-  
-  const updateRequestStatus = (index, status) => {
-    const updatedRequests = [...requests];
-    updatedRequests[index].status = status;
-    setRequests(updatedRequests);
-    localStorage.setItem('requests', JSON.stringify(updatedRequests));
-  };
+
+  const addHRRequest = (newHRRequest) =>
+    setHRRequests([...hrRequests, { ...newHRRequest, status: "Submitted" }]);
+  const addBudgetRequest = (newBudgetRequest) =>
+    setBudgetRequests([...budgetRequests, newBudgetRequest]);
+
   const updateHRRequestStatus = (index, status) => {
     const updatedHRRequests = [...hrRequests];
     updatedHRRequests[index].status = status;
     setHRRequests(updatedHRRequests);
-    localStorage.setItem('hrRequests', JSON.stringify(updatedHRRequests));
+    localStorage.setItem("hrRequests", JSON.stringify(updatedHRRequests));
   };
 
   const updateBudgetRequestStatus = (index, status) => {
     const updatedBudgetRequests = [...budgetRequests];
     updatedBudgetRequests[index].status = status;
     setBudgetRequests(updatedBudgetRequests);
-    localStorage.setItem('budgetRequests', JSON.stringify(updatedBudgetRequests));
+    localStorage.setItem(
+      "budgetRequests",
+      JSON.stringify(updatedBudgetRequests)
+    );
   };
 
   const allocateRequest = (index, team) => {
     const updatedRequests = [...requests];
     updatedRequests[index] = { ...updatedRequests[index], team };
     setRequests(updatedRequests);
-    localStorage.setItem('requests', JSON.stringify(updatedRequests));
+    localStorage.setItem("requests", JSON.stringify(updatedRequests));
   };
 
   // Render pages based on user role
   const renderRoleBasedRoutes = () => {
     switch (role) {
-      case 'Customer Service':
-        return <Route path="/" element={<CustomerService requests={requests} addRequest={addRequest} />} />;
-      case 'Senior Customer Service':
-        return <Route path="/" element={<SeniorCustomerService requests={requests} updateRequestStatus={updateRequestStatus} />} />;
-      case 'Production Manager':
+      case "Customer Service":
+        return <Route path="/" element={<CustomerService />} />;
+      case "Senior Customer Service":
+        return <Route path="/" element={<SeniorCustomerService />} />;
+      case "Production Manager":
         return (
           <>
             <Route
@@ -98,26 +108,48 @@ function AppContent() {
                 />
               }
             />
-            <Route path="/task-allocate" element={<TaskAllocate requests={requests} allocateRequest={allocateRequest} />} />
+            <Route
+              path="/task-allocate"
+              element={
+                <TaskAllocate
+                  requests={requests}
+                  allocateRequest={allocateRequest}
+                />
+              }
+            />
           </>
         );
-      case 'Financial Manager':
+      case "Financial Manager":
         return (
           <Route
-            path="/"
+            path="/FM"
             element={
               <Financial
-                requests={requests.filter((request) => request.status === 'Approved')}
+                requests={requests.filter(
+                  (request) => request.status === "Approved"
+                )}
                 budgetRequests={budgetRequests || []}
                 updateBudgetRequestStatus={updateBudgetRequestStatus}
               />
             }
           />
         );
-      case 'HR Manager':
-        return <Route path="/" element={<HR hrRequests={hrRequests || []} updateHRRequestStatus={updateHRRequestStatus} />} />;
-      case 'Subteam':
-        return <Route path="/" element={<Subteam requests={requests || []} />} />;
+      case "HR Manager":
+        return (
+          <Route
+            path="/HR"
+            element={
+              <HR
+                hrRequests={hrRequests || []}
+                updateHRRequestStatus={updateHRRequestStatus}
+              />
+            }
+          />
+        );
+      case "Subteam":
+        return (
+          <Route path="/ST" element={<Subteam requests={requests || []} />} />
+        );
       default:
         return <Navigate to="/login" />;
     }
@@ -132,7 +164,10 @@ function AppContent() {
               <>
                 <li className="text-white">{role}</li>
                 <li>
-                  <button onClick={logout} className="text-white hover:text-gray-300">
+                  <button
+                    onClick={logout}
+                    className="text-white hover:text-gray-300"
+                  >
                     Logout
                   </button>
                 </li>
@@ -149,7 +184,11 @@ function AppContent() {
         <div className="p-4">
           <Routes>
             <Route path="/login" element={<Login />} />
-            {isAuthenticated ? renderRoleBasedRoutes() : <Route path="*" element={<Navigate to="/login" />} />}
+            {isAuthenticated ? (
+              renderRoleBasedRoutes()
+            ) : (
+              <Route path="*" element={<Navigate to="/login" />} />
+            )}
           </Routes>
         </div>
       </div>
@@ -160,7 +199,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <RequestsProvider>
+        <AppContent />
+      </RequestsProvider>
     </AuthProvider>
   );
 }
