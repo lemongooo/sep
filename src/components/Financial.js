@@ -1,7 +1,12 @@
 // src/components/Financial.js
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-function Financial({ requests, addComment, budgetRequests, updateBudgetRequestStatus }) {
+function Financial({
+  requests,
+  addComment,
+  budgetRequests,
+  updateBudgetRequestStatus,
+}) {
   const [comments, setComments] = useState([]);
 
   const handleCommentChange = (index, value) => {
@@ -11,8 +16,10 @@ function Financial({ requests, addComment, budgetRequests, updateBudgetRequestSt
   };
 
   const handleSubmitComment = (index) => {
-    addComment(index, comments[index]);
+    const comment = comments[index] || "";
+    addComment(index, comment, "Commented by FM"); // 将请求状态更新为“Commented by FM”
     alert(`Comment for request ${index + 1} has been submitted!`);
+    setComments((prev) => prev.map((_, i) => (i === index ? "" : prev[i]))); // 清空对应评论框
   };
 
   const handleBudgetRequestStatusChange = (index, status) => {
@@ -29,15 +36,31 @@ function Financial({ requests, addComment, budgetRequests, updateBudgetRequestSt
           <ul className="space-y-4">
             {requests.map((request, index) => (
               <li key={index} className="p-4 border border-gray-300 rounded-md">
-                <p><strong>Client Name:</strong> {request.clientName}</p>
-                <p><strong>Event Type:</strong> {request.eventType}</p>
-                <p><strong>Date:</strong> {request.date}</p>
-                <p><strong>Budget:</strong> {request.budget}</p>
-                <p><strong>Details:</strong> {request.details}</p>
+                <p>
+                  <strong>Client Name:</strong> {request.clientName}
+                </p>
+                <p>
+                  <strong>Event Type:</strong> {request.eventType}
+                </p>
+                <p>
+                  <strong>Date:</strong> {request.date}
+                </p>
+                <p>
+                  <strong>Budget:</strong> {request.budget}
+                </p>
+                <p>
+                  <strong>Details:</strong> {request.details}
+                </p>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">Add Comment:</label>
+                  <label
+                    htmlFor={`comment-${index}`}
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Add Comment:
+                  </label>
                   <textarea
-                    value={comments[index] || ''}
+                    id={`comment-${index}`}
+                    value={comments[index] || ""}
                     onChange={(e) => handleCommentChange(index, e.target.value)}
                     className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                   />
@@ -57,23 +80,37 @@ function Financial({ requests, addComment, budgetRequests, updateBudgetRequestSt
       <div className="w-full max-w-2xl bg-white p-6 rounded-md shadow-md">
         <h3 className="text-xl font-bold mb-4">Budget Requests</h3>
         {budgetRequests.length === 0 ? (
-          <p className="text-gray-500">No budget requests available for review.</p>
+          <p className="text-gray-500">
+            No budget requests available for review.
+          </p>
         ) : (
           <ul className="space-y-4">
             {budgetRequests.map((budgetRequest, index) => (
               <li key={index} className="p-4 border border-gray-300 rounded-md">
-                <p><strong>Request ID:</strong> {budgetRequest.requestId}</p>
-                <p><strong>Budget Amount:</strong> {budgetRequest.amount}</p>
-                <p><strong>Reason:</strong> {budgetRequest.reason}</p>
-                <p><strong>Status:</strong> {budgetRequest.status}</p>
+                <p>
+                  <strong>Request ID:</strong> {budgetRequest.requestId}
+                </p>
+                <p>
+                  <strong>Budget Amount:</strong> {budgetRequest.amount}
+                </p>
+                <p>
+                  <strong>Reason:</strong> {budgetRequest.reason}
+                </p>
+                <p>
+                  <strong>Status:</strong> {budgetRequest.status}
+                </p>
                 <button
-                  onClick={() => handleBudgetRequestStatusChange(index, 'Approved')}
+                  onClick={() =>
+                    handleBudgetRequestStatusChange(index, "Approved")
+                  }
                   className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
                   Approve
                 </button>
                 <button
-                  onClick={() => handleBudgetRequestStatusChange(index, 'Rejected')}
+                  onClick={() =>
+                    handleBudgetRequestStatusChange(index, "Rejected")
+                  }
                   className="mt-2 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 ml-2"
                 >
                   Reject
