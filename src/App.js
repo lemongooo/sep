@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -8,81 +8,20 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { RequestsProvider, useRequests } from "./context/RequestContext";
 import CustomerService from "./components/CustomerService";
 import Financial from "./components/Financial";
 import SeniorCustomerService from "./components/SeniorCustomerService";
 import TaskAllocate from "./components/TaskAllocate";
 import ProductionManager from "./components/ProductionManager";
+import AdministrationManager from "./components/AM";
 import HR from "./components/HR";
 import Login from "./components/Login";
 import Subteam from "./components/Subteam";
-import { RequestsProvider } from "./context/RequestContext";
 
 function AppContent() {
   const { isAuthenticated, role, logout } = useAuth();
-  const [requests, setRequests] = useState([]);
-  const [hrRequests, setHRRequests] = useState([]);
-  const [budgetRequests, setBudgetRequests] = useState([]);
-
-  // Load request data from LocalStorage
-  useEffect(() => {
-    const storedRequests = localStorage.getItem("requests");
-    if (storedRequests) setRequests(JSON.parse(storedRequests));
-
-    const storedHRRequests = localStorage.getItem("hrRequests");
-    if (storedHRRequests) setHRRequests(JSON.parse(storedHRRequests));
-
-    const storedBudgetRequests = localStorage.getItem("budgetRequests");
-    if (storedBudgetRequests)
-      setBudgetRequests(JSON.parse(storedBudgetRequests));
-  }, []);
-
-  // Save data to LocalStorage
-  useEffect(() => {
-    if (requests.length > 0)
-      localStorage.setItem("requests", JSON.stringify(requests));
-  }, [requests]);
-
-  useEffect(() => {
-    if (hrRequests.length > 0)
-      localStorage.setItem("hrRequests", JSON.stringify(hrRequests));
-  }, [hrRequests]);
-
-  useEffect(() => {
-    if (budgetRequests.length > 0)
-      localStorage.setItem("budgetRequests", JSON.stringify(budgetRequests));
-  }, [budgetRequests]);
-
-  // Update and add request functions
-
-  const addHRRequest = (newHRRequest) =>
-    setHRRequests([...hrRequests, { ...newHRRequest, status: "Submitted" }]);
-  const addBudgetRequest = (newBudgetRequest) =>
-    setBudgetRequests([...budgetRequests, newBudgetRequest]);
-
-  const updateHRRequestStatus = (index, status) => {
-    const updatedHRRequests = [...hrRequests];
-    updatedHRRequests[index].status = status;
-    setHRRequests(updatedHRRequests);
-    localStorage.setItem("hrRequests", JSON.stringify(updatedHRRequests));
-  };
-
-  const updateBudgetRequestStatus = (index, status) => {
-    const updatedBudgetRequests = [...budgetRequests];
-    updatedBudgetRequests[index].status = status;
-    setBudgetRequests(updatedBudgetRequests);
-    localStorage.setItem(
-      "budgetRequests",
-      JSON.stringify(updatedBudgetRequests)
-    );
-  };
-
-  const allocateRequest = (index, team) => {
-    const updatedRequests = [...requests];
-    updatedRequests[index] = { ...updatedRequests[index], team };
-    setRequests(updatedRequests);
-    localStorage.setItem("requests", JSON.stringify(updatedRequests));
-  };
+  const { requests } = useRequests();
 
   // Render pages based on user role
   const renderRoleBasedRoutes = () => {
@@ -94,61 +33,45 @@ function AppContent() {
       case "Production Manager":
         return (
           <>
-            <Route
-              path="/"
-              element={
-                <ProductionManager
-                  requests={requests || []}
-                  hrRequests={hrRequests || []}
-                  budgetRequests={budgetRequests || []}
-                  addHRRequest={addHRRequest}
-                  addBudgetRequest={addBudgetRequest}
-                  updateHRRequestStatus={updateHRRequestStatus}
-                  updateBudgetRequestStatus={updateBudgetRequestStatus}
-                />
-              }
-            />
-            <Route
-              path="/task-allocate"
-              element={
-                <TaskAllocate
-                  requests={requests}
-                  allocateRequest={allocateRequest}
-                />
-              }
-            />
+            <Route path="/" element={<ProductionManager />} />
+            <Route path="/task-allocate" element={<TaskAllocate />} />
           </>
         );
       case "Financial Manager":
         return (
           <Route
-            path="/FM"
+            path="/"
             element={
-              <Financial
-                requests={requests.filter(
-                  (request) => request.status === "Approved"
-                )}
-                budgetRequests={budgetRequests || []}
-                updateBudgetRequestStatus={updateBudgetRequestStatus}
+              <Financial 
+                requests={requests.filter(request => request.status === "Approved by SCS")}
+              />
+            }
+          />
+        );
+      case "Administration Manager":
+        return (
+          <Route
+            path="/"
+            element={
+              <AdministrationManager 
+                requests={requests.filter(request => request.status === "Commented by FM")}
               />
             }
           />
         );
       case "HR Manager":
-        return (
-          <Route
-            path="/HR"
-            element={
-              <HR
-                hrRequests={hrRequests || []}
-                updateHRRequestStatus={updateHRRequestStatus}
-              />
-            }
-          />
-        );
+        return(
+<>
+<Route path="/" element={<HR />} />
+      <Route path="/HR" element={<HR />} />
+</>
+        ) 
       case "Subteam":
         return (
-          <Route path="/ST" element={<Subteam requests={requests || []} />} />
+          <>
+            <Route path="/" element={<Subteam />} />
+            <Route path="/ST" element={<Subteam />} />
+          </>
         );
       default:
         return <Navigate to="/login" />;
@@ -164,10 +87,7 @@ function AppContent() {
               <>
                 <li className="text-white">{role}</li>
                 <li>
-                  <button
-                    onClick={logout}
-                    className="text-white hover:text-gray-300"
-                  >
+                  <button onClick={logout} className="text-white hover:text-gray-300">
                     Logout
                   </button>
                 </li>

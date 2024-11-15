@@ -1,60 +1,168 @@
-// src/context/RequestsContext.js
-import React, { createContext, useState, useEffect } from "react";
+// src/context/RequestContext.js
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 export const RequestsContext = createContext();
 
+export const useRequests = () => {
+  const context = useContext(RequestsContext);
+  if (!context) {
+    throw new Error('useRequests must be used within a RequestsProvider');
+  }
+  return context;
+};
+
 export const RequestsProvider = ({ children }) => {
   const [requests, setRequests] = useState([]);
+  const [hrRequests, setHRRequests] = useState([]);
+  const [budgetRequests, setBudgetRequests] = useState([]);
 
-  // 初始化：从 localStorage 加载数据
+  // 初始化加载数据
   useEffect(() => {
-    const storedRequests = JSON.parse(localStorage.getItem("requests")) || [];
-    setRequests(storedRequests);
-  }, []);
+    const loadStoredData = () => {
+      const storedRequests = localStorage.getItem("requests");
+      if (storedRequests) setRequests(JSON.parse(storedRequests));
 
-  // 每当 requests 更新时保存到 localStorage
-  useEffect(() => {
-    localStorage.setItem("requests", JSON.stringify(requests));
-  }, [requests]);
+      const storedHRRequests = localStorage.getItem("hrRequests");
+      if (storedHRRequests) setHRRequests(JSON.parse(storedHRRequests));
 
-  // 监听 localStorage 中 requests 的变化
-  useEffect(() => {
+      const storedBudgetRequests = localStorage.getItem("budgetRequests");
+      if (storedBudgetRequests) setBudgetRequests(JSON.parse(storedBudgetRequests));
+    };
+
+    loadStoredData();
+
     const handleStorageChange = (event) => {
       if (event.key === "requests") {
-        const updatedRequests = JSON.parse(event.newValue);
-        setRequests(updatedRequests); // 更新本地状态
+        setRequests(JSON.parse(event.newValue));
+      } else if (event.key === "hrRequests") {
+        setHRRequests(JSON.parse(event.newValue));
+      } else if (event.key === "budgetRequests") {
+        setBudgetRequests(JSON.parse(event.newValue));
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
-
-    // 清理监听器
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // 添加新请求
+  // 保存到localStorage
+  useEffect(() => {
+    if (requests.length > 0) {
+      localStorage.setItem("requests", JSON.stringify(requests));
+    }
+  }, [requests]);
+
+  useEffect(() => {
+    if (hrRequests.length > 0) {
+      localStorage.setItem("hrRequests", JSON.stringify(hrRequests));
+    }
+  }, [hrRequests]);
+
+  useEffect(() => {
+    if (budgetRequests.length > 0) {
+      localStorage.setItem("budgetRequests", JSON.stringify(budgetRequests));
+    }
+  }, [budgetRequests]);
+
   const addRequest = (newRequest) => {
-    const updatedRequests = [
-      ...requests,
-      { ...newRequest, comment: "", status: "Pending", team: "" },
-    ];
-    setRequests(updatedRequests); // 更新状态并触发渲染
-    localStorage.setItem("requests", JSON.stringify(updatedRequests)); // 更新 localStorage
+    const id = `req_${Date.now()}`; 
+    setRequests(prev => [...prev, { 
+      ...newRequest,
+      id, comment: "", status: "Pending", team: "" }]);
   };
 
-  // 更新请求状态
+  // {requests.map((req, index) => (
+  //   <option key={index} value={req.id}>
+  //     {req.id} - {req.clientName} - {req.eventType}
+  //   </option>
+  // ))}
+
   const updateRequestStatus = (index, status) => {
-    const updatedRequests = [...requests];
-    updatedRequests[index].status = status;
-    setRequests(updatedRequests); // 更新状态并触发渲染
-    localStorage.setItem("requests", JSON.stringify(updatedRequests)); // 更新 localStorage
+    setRequests(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], status };
+      return updated;
+    });
+  };
+
+  const addComment = (index, comment) => {
+    setRequests(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], comment, status: "Commented by FM" };
+      return updated;
+    });
+  };
+
+  const addHRRequest = (newHRRequest) => {
+    setHRRequests(prev => [...prev, { ...newHRRequest, status: "Submitted" }]);
+  };
+
+  const addBudgetRequest = (newBudgetRequest) => {
+    setBudgetRequests(prev => [...prev, newBudgetRequest]);
+  };
+
+  const updateBudgetRequestStatus = (index, status) => {
+    setBudgetRequests(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], status };
+      // 如果预算请求被批准，更新对应的request
+      if (status === 'Approved') {
+        const budgetRequest = updated[index];
+        setRequests(prevRequests => {
+          return prevRequests.map(request => {
+            if (request.id === budgetRequest.requestId) {
+              console.log("updated budget request");
+              return {
+                ...request,
+                extraBudget: {
+                  amount: budgetRequest.amount,
+                  reason: budgetRequest.reason
+                }
+                
+              };
+              
+            }
+            
+            return request;
+          });
+        });
+      }
+      
+      return updated;
+    });
+  };
+
+  const updateHRRequestStatus = (index, status) => {
+    setHRRequests(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], status };
+      return updated;
+    });
+  };
+
+  const allocateRequest = (index, team) => {
+    setRequests(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], team };
+      return updated;
+    });
   };
 
   return (
     <RequestsContext.Provider
-      value={{ requests, addRequest, updateRequestStatus }}
+      value={{
+        requests,
+        hrRequests,
+        budgetRequests,
+        addRequest,
+        addHRRequest,
+        addBudgetRequest,
+        updateRequestStatus,
+        updateHRRequestStatus,
+        updateBudgetRequestStatus,
+        allocateRequest,
+        addComment,
+      }}
     >
       {children}
     </RequestsContext.Provider>

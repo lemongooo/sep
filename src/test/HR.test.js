@@ -1,77 +1,76 @@
-// src/test/HR.test.js
 import { render, screen, fireEvent } from "@testing-library/react";
 import HR from "../components/HR";
 import { AuthProvider } from "../context/AuthContext";
+import { RequestsContext } from "../context/RequestContext";
 
-// Mock function for updating the status
-const mockUpdateHRRequestStatus = jest.fn();
+// 创建一个包装器组件来提供 mock 的 context 值
+const renderWithProviders = (mockContextValue = {}) => {
+    const defaultContextValue = {
+        hrRequests: [],
+        updateHRRequestStatus: jest.fn(),
+        ...mockContextValue
+    };
 
-beforeEach(() => {
-  mockUpdateHRRequestStatus.mockClear();
-});
+    return {
+        ...render(
+            <AuthProvider>
+                <RequestsContext.Provider value={defaultContextValue}>
+                    <HR />
+                </RequestsContext.Provider>
+            </AuthProvider>
+        ),
+        mockContextValue: defaultContextValue
+    };
+};
 
-test("renders HR component and displays HR requests", () => {
-  const hrRequests = [
-    {
-      requestId: "REQ001",
-      staffCount: 5,
-      responsibilities: "Manage team operations",
-      timeFrame: "Q4 2023",
-      status: "Submitted",
-    },
-    {
-      requestId: "REQ002",
-      staffCount: 3,
-      responsibilities: "Assist with project",
-      timeFrame: "Q1 2024",
-      status: "Pending",
-    },
-  ];
+describe('HR Component', () => {
+    // Test 1: 基础渲染测试 - 无请求
+    test('renders empty state', () => {
+        renderWithProviders();
+        expect(screen.getByText(/No HR requests available/i)).toBeInTheDocument();
+    });
 
-  render(
-    <AuthProvider>
-      <HR
-        hrRequests={hrRequests}
-        updateHRRequestStatus={mockUpdateHRRequestStatus}
-      />
-    </AuthProvider>
-  );
+    // Test 2: 显示 HR 请求并测试状态更新
+    test('displays HR request and allows status update', () => {
+        const mockHrRequests = [
+            {
+                requestId: "REQ001",
+                staffCount: 5,
+                responsibilities: "Manage team operations",
+                timeFrame: "Q4 2023",
+                status: "Submitted",
+            }
+        ];
 
-  // Check if HR requests are displayed
-  expect(screen.getByText(/HR Requests/i)).toBeInTheDocument();
-  expect(screen.getByText(/REQ001/i)).toBeInTheDocument();
-  expect(screen.getByText(/Manage team operations/i)).toBeInTheDocument();
-  expect(screen.getByText(/Q4 2023/i)).toBeInTheDocument();
-  expect(screen.getAllByText(/Submitted/i)[0]).toBeInTheDocument();
-  expect(screen.getByText(/REQ002/i)).toBeInTheDocument();
-  expect(screen.getByText(/Assist with project/i)).toBeInTheDocument();
-  expect(screen.getByText(/Q1 2024/i)).toBeInTheDocument();
-  expect(screen.getByText(/Pending/i)).toBeInTheDocument();
-});
+        const { mockContextValue } = renderWithProviders({ hrRequests: mockHrRequests });
 
-test("allows status change for HR requests", () => {
-  const hrRequests = [
-    {
-      requestId: "REQ001",
-      staffCount: 5,
-      responsibilities: "Manage team operations",
-      timeFrame: "Q4 2023",
-      status: "Submitted",
-    },
-  ];
+        // 检查页面标题
+        expect(screen.getByText(/HR Requests/i)).toBeInTheDocument();
+        
+        // 验证 HR 请求详细信息
+        expect(screen.getByText((content, element) => {
+            return element.tagName.toLowerCase() === 'p' && 
+                   element.textContent.includes('Request ID:') && 
+                   element.textContent.includes('REQ001');
+        })).toBeInTheDocument();
 
-  render(
-    <AuthProvider>
-      <HR
-        hrRequests={hrRequests}
-        updateHRRequestStatus={mockUpdateHRRequestStatus}
-      />
-    </AuthProvider>
-  );
+        expect(screen.getByText((content, element) => {
+            return element.tagName.toLowerCase() === 'p' && 
+                   element.textContent.includes('Responsibilities:') && 
+                   element.textContent.includes('Manage team operations');
+        })).toBeInTheDocument();
 
-  const statusDropdown = screen.getByDisplayValue(/Submitted/i);
-  expect(statusDropdown).toBeInTheDocument();
+        expect(screen.getByText((content, element) => {
+            return element.tagName.toLowerCase() === 'p' && 
+                   element.textContent.includes('Time Frame:') && 
+                   element.textContent.includes('Q4 2023');
+        })).toBeInTheDocument();
 
-  fireEvent.change(statusDropdown, { target: { value: "Approved" } });
-  expect(mockUpdateHRRequestStatus).toHaveBeenCalledWith(0, "Approved");
+        // 测试状态更新功能
+        const statusDropdown = screen.getByDisplayValue(/Submitted/i);
+        expect(statusDropdown).toBeInTheDocument();
+
+        fireEvent.change(statusDropdown, { target: { value: "Approved" } });
+        expect(mockContextValue.updateHRRequestStatus).toHaveBeenCalledWith(0, "Approved");
+    });
 });

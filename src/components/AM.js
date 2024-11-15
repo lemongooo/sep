@@ -1,7 +1,9 @@
 // src/components/AdministrationManager.js
-import React from "react";
+import React, { useContext } from "react";
+import { RequestsContext } from "../context/RequestContext";
 
-const AdministrationManager = ({ requests, updateRequestStatus }) => {
+const AdministrationManager = () => {
+  const { requests, updateRequestStatus } = useContext(RequestsContext);
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
       <div className="w-full max-w-2xl bg-white p-6 rounded-md shadow-md">

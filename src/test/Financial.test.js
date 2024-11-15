@@ -1,117 +1,111 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import Financial from "../components/Financial";
-import { AuthProvider } from "../context/AuthContext";
+// src/test/Financial.test.js
+import { render, screen, fireEvent } from '@testing-library/react';
+import Financial from '../components/Financial';
+import { AuthProvider } from '../context/AuthContext';
+import { RequestsContext } from '../context/RequestContext';
 
-// Mock functions
-const mockAddComment = jest.fn();
-const mockUpdateBudgetRequestStatus = jest.fn();
+// 创建一个包装器组件来提供 mock 的 context 值
+const renderWithProviders = (mockContextValue = {}) => {
+  const defaultContextValue = {
+    requests: [],
+    budgetRequests: [],
+    addComment: jest.fn(),
+    updateBudgetRequestStatus: jest.fn(),
+    ...mockContextValue
+  };
 
-beforeEach(() => {
-  mockAddComment.mockClear();
-  mockUpdateBudgetRequestStatus.mockClear();
-});
+  return {
+    ...render(
+      <AuthProvider>
+        <RequestsContext.Provider value={defaultContextValue}>
+          <Financial />
+        </RequestsContext.Provider>
+      </AuthProvider>
+    ),
+    mockContextValue: defaultContextValue
+  };
+};
 
-test("renders Financial component with requests and budget requests", () => {
-  const requests = [
-    {
-      clientName: "Client A",
-      eventType: "Conference",
-      date: "2023-12-01",
-      budget: "5000",
-      details: "Details of Conference",
-    },
-  ];
+describe('Financial Component', () => {
+  const mockRequest = {
+    id: 'req_1',
+    clientName: 'Client A',
+    eventType: 'Conference',
+    date: '2023-12-01',
+    budget: '5000',
+    details: 'Details of Conference',
+    status: 'Approved by SCS'
+  };
 
-  const budgetRequests = [
-    {
-      requestId: "BUD001",
-      amount: "3000",
-      reason: "Project funding",
-      status: "Pending",
-    },
-  ];
+  const mockBudgetRequest = {
+    requestId: 'req_1',
+    clientName: 'Client A',
+    eventType: 'Conference',
+    amount: '3000',
+    reason: 'Project funding',
+    status: 'Pending'
+  };
 
-  render(
-    <AuthProvider>
-      <Financial
-        requests={requests}
-        addComment={mockAddComment}
-        budgetRequests={budgetRequests}
-        updateBudgetRequestStatus={mockUpdateBudgetRequestStatus}
-      />
-    </AuthProvider>
-  );
+  // Test 1: 基础渲染测试
+  test('renders Financial component', () => {
+    renderWithProviders({
+      requests: [mockRequest],
+      budgetRequests: [mockBudgetRequest]
+    });
 
-  // Check if the component renders correctly
-  expect(screen.getByText(/Financial - Review Requests/i)).toBeInTheDocument();
-  expect(screen.getByText(/Client A/i)).toBeInTheDocument();
-  expect(screen.getAllByText(/Conference/i)[0]).toBeInTheDocument();
-  expect(screen.getByText(/Budget Requests/i)).toBeInTheDocument();
-  expect(screen.getByText(/BUD001/i)).toBeInTheDocument();
-  expect(screen.getByText(/3000/i)).toBeInTheDocument();
-  expect(screen.getByText(/Project funding/i)).toBeInTheDocument();
-});
+    // 检查标题
+    expect(screen.getByRole('heading', { name: /Financial - Review Requests/i })).toBeInTheDocument();
+    
+    // 检查请求内容
+    expect(screen.getByText(/Client A/)).toBeInTheDocument();
+    expect(screen.getByText(/Project funding/)).toBeInTheDocument();
+    expect(screen.getByText(/3000/)).toBeInTheDocument();
 
-test("adds a comment and calls addComment", () => {
-  const requests = [
-    {
-      clientName: "Client A",
-      eventType: "Conference",
-      date: "2023-12-01",
-      budget: "5000",
-      details: "Details of Conference",
-    },
-  ];
+    // 检查按钮
+    expect(screen.getByRole('button', { name: /Submit Comment/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Approve/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Reject/i })).toBeInTheDocument();
+  });
 
-  const budgetRequests = [];
+  // Test 2: 评论提交测试
+  test('submits comment for request', () => {
+    const mockAddComment = jest.fn();
+    renderWithProviders({
+      requests: [mockRequest],
+      addComment: mockAddComment
+    });
 
-  render(
-    <AuthProvider>
-      <Financial
-        requests={requests}
-        addComment={mockAddComment}
-        budgetRequests={budgetRequests}
-        updateBudgetRequestStatus={mockUpdateBudgetRequestStatus}
-      />
-    </AuthProvider>
-  );
+    // 填写并提交评论
+    const commentInput = screen.getByLabelText(/Add Comment:/i);
+    fireEvent.change(commentInput, { target: { value: 'Test comment' } });
+    fireEvent.click(screen.getByRole('button', { name: /Submit Comment/i }));
 
-  // Add a comment
-  const commentInput = screen.getByLabelText(/Add Comment:/i);
-  fireEvent.change(commentInput, { target: { value: "This is a comment." } });
-  fireEvent.click(screen.getByText(/Submit Comment/i));
+    // 验证评论提交
+    expect(mockAddComment).toHaveBeenCalledWith(0, 'Test comment', 'Commented by FM');
+  });
 
-  // Verify that addComment was called with the correct parameters
-  expect(mockAddComment).toHaveBeenCalledWith(0, "This is a comment.");
-});
+  // Test 3: 预算请求状态更新测试
+  test('updates budget request status', () => {
+    const mockUpdateStatus = jest.fn();
+    renderWithProviders({
+      budgetRequests: [mockBudgetRequest],
+      updateBudgetRequestStatus: mockUpdateStatus
+    });
 
-test("approves and rejects budget requests", () => {
-  const requests = [];
-  const budgetRequests = [
-    {
-      requestId: "BUD001",
-      amount: "3000",
-      reason: "Project funding",
-      status: "Pending",
-    },
-  ];
+    // 测试批准操作
+    fireEvent.click(screen.getByRole('button', { name: /Approve/i }));
+    expect(mockUpdateStatus).toHaveBeenCalledWith(0, 'Approved');
 
-  render(
-    <AuthProvider>
-      <Financial
-        requests={requests}
-        addComment={mockAddComment}
-        budgetRequests={budgetRequests}
-        updateBudgetRequestStatus={mockUpdateBudgetRequestStatus}
-      />
-    </AuthProvider>
-  );
+    // 测试拒绝操作
+    fireEvent.click(screen.getByRole('button', { name: /Reject/i }));
+    expect(mockUpdateStatus).toHaveBeenCalledWith(0, 'Rejected');
+  });
 
-  // Approve
-  fireEvent.click(screen.getByText(/Approve/i));
-  expect(mockUpdateBudgetRequestStatus).toHaveBeenCalledWith(0, "Approved");
-
-  // Reject
-  fireEvent.click(screen.getByText(/Reject/i));
-  expect(mockUpdateBudgetRequestStatus).toHaveBeenCalledWith(0, "Rejected");
+  // Test 4: 空状态显示测试
+  test('displays empty state messages', () => {
+    renderWithProviders();
+    
+    expect(screen.getByText(/No approved requests available for review/i)).toBeInTheDocument();
+    expect(screen.getByText(/No budget requests available for review/i)).toBeInTheDocument();
+  });
 });

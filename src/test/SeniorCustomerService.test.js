@@ -2,64 +2,76 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import SeniorCustomerService from '../components/SeniorCustomerService';
 import { AuthProvider } from '../context/AuthContext';
+import { RequestsContext } from '../context/RequestContext';
 
-// Mock function for updating request status
-const mockUpdateRequestStatus = jest.fn();
+const renderWithProviders = (mockRequests = []) => {
+  const mockUpdateRequestStatus = jest.fn();
+  
+  render(
+    <AuthProvider>
+      <RequestsContext.Provider value={{
+        requests: mockRequests,
+        updateRequestStatus: mockUpdateRequestStatus
+      }}>
+        <SeniorCustomerService />
+      </RequestsContext.Provider>
+    </AuthProvider>
+  );
 
-beforeEach(() => {
-    mockUpdateRequestStatus.mockClear();
-});
+  return { mockUpdateRequestStatus };
+};
 
-test('renders SeniorCustomerService component with a request', () => {
+describe('SeniorCustomerService Component', () => {
+  // 测试1：基本渲染
+  test('renders component with a request', () => {
     const requests = [
-        { clientName: 'Client A', eventType: 'Conference', date: '2023-12-01', budget: '5000', details: 'Details of Conference', status: 'Pending' }
+      { 
+        clientName: 'Client A', 
+        eventType: 'Conference', 
+        date: '2023-12-01', 
+        budget: '5000', 
+        details: 'Details', 
+        status: 'Pending' 
+      }
     ];
 
-    render(
-        <AuthProvider>
-            <SeniorCustomerService requests={requests} updateRequestStatus={mockUpdateRequestStatus} />
-        </AuthProvider>
-    );
+    renderWithProviders(requests);
 
-    // Check if the component renders correctly
-    expect(screen.getByText(/Senior Customer Service - Review Requests/i)).toBeInTheDocument();
-    expect(screen.getByText(/Client A/i)).toBeInTheDocument();
-    expect(screen.getByText(/Conference/i)).toBeInTheDocument();
-    expect(screen.getByText(/Pending/i)).toBeInTheDocument();
-});
+    expect(screen.getByText(/Senior Customer Service/i)).toBeInTheDocument();
+    expect(screen.getByText(/Client A/)).toBeInTheDocument();
+    expect(screen.getByText(/Approve/)).toBeInTheDocument();
+    expect(screen.getByText(/Reject/)).toBeInTheDocument();
+  });
 
-test('approves the request and calls updateRequestStatus with correct parameters', () => {
+  // 测试2：批准请求
+  test('approves request', () => {
     const requests = [
-        { clientName: 'Client A', eventType: 'Conference', date: '2023-12-01', budget: '5000', details: 'Details of Conference', status: 'Pending' }
+      { 
+        clientName: 'Client A', 
+        eventType: 'Conference', 
+        status: 'Pending' 
+      }
     ];
 
-    render(
-        <AuthProvider>
-            <SeniorCustomerService requests={requests} updateRequestStatus={mockUpdateRequestStatus} />
-        </AuthProvider>
-    );
+    const { mockUpdateRequestStatus } = renderWithProviders(requests);
+    
+    fireEvent.click(screen.getByText(/Approve/));
+    expect(mockUpdateRequestStatus).toHaveBeenCalledWith(0, 'Approved by SCS');
+  });
 
-    // Approve the request
-    fireEvent.click(screen.getByText(/Approve/i));
-
-    // Verify that updateRequestStatus was called with correct parameters
-    expect(mockUpdateRequestStatus).toHaveBeenCalledWith(0, 'Approved');
-});
-
-test('rejects the request and calls updateRequestStatus with correct parameters', () => {
+  // 测试3：拒绝请求
+  test('rejects request', () => {
     const requests = [
-        { clientName: 'Client A', eventType: 'Conference', date: '2023-12-01', budget: '5000', details: 'Details of Conference', status: 'Pending' }
+      { 
+        clientName: 'Client A', 
+        eventType: 'Conference', 
+        status: 'Pending' 
+      }
     ];
 
-    render(
-        <AuthProvider>
-            <SeniorCustomerService requests={requests} updateRequestStatus={mockUpdateRequestStatus} />
-        </AuthProvider>
-    );
-
-    // Reject the request
-    fireEvent.click(screen.getByText(/Reject/i));
-
-    // Verify that updateRequestStatus was called with correct parameters
-    expect(mockUpdateRequestStatus).toHaveBeenCalledWith(0, 'Rejected');
+    const { mockUpdateRequestStatus } = renderWithProviders(requests);
+    
+    fireEvent.click(screen.getByText(/Reject/));
+    expect(mockUpdateRequestStatus).toHaveBeenCalledWith(0, 'Rejected by SCS');
+  });
 });

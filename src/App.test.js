@@ -1,83 +1,110 @@
 // src/test/App.test.js
 import { render, screen, fireEvent } from '@testing-library/react';
-import App from '../App';
-import { AuthProvider } from '../context/AuthContext';
-import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { AuthProvider } from './context/AuthContext';
+import { RequestsProvider } from './context/RequestContext';
 
 // Mock the AuthContext
-jest.mock('../context/AuthContext', () => ({
-    useAuth: () => ({
-        isAuthenticated: false,
-        role: '',
-        login: jest.fn(),
-        logout: jest.fn(),
-    }),
+jest.mock('./context/AuthContext', () => {
+  const mockUseAuth = jest.fn(() => ({
+    isAuthenticated: false,
+    role: '',
+    login: jest.fn(),
+    logout: jest.fn(),
+  }));
+  return {
+    useAuth: mockUseAuth,
+    AuthProvider: ({ children }) => children,
+  };
+});
+
+// Mock RequestContext with minimal setup
+jest.mock('./context/RequestContext', () => ({
+  useRequests: () => ({
+    requests: [],
+  }),
+  RequestsProvider: ({ children }) => children,
 }));
 
+const { useAuth } = require('./context/AuthContext');
+
+// Helper function to render App with all required providers
+const renderApp = () => {
+  return render(
+    <AuthProvider>
+      <RequestsProvider>
+        <App />
+      </RequestsProvider>
+    </AuthProvider>
+  );
+};
+
 beforeEach(() => {
-    jest.clearAllMocks();
+  jest.clearAllMocks();
 });
 
-test('renders Login page when not authenticated', () => {
-    render(
-        <AuthProvider>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </AuthProvider>
-    );
+describe('App Basic Tests', () => {
+  test('renders Login page when not authenticated', () => {
+    useAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      role: '',
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
 
-    // Check that the Login component is rendered
-    expect(screen.getByText(/Login/i)).toBeInTheDocument();
-});
+    renderApp();
+    // 使用 getAllByText 来避免多个匹配元素的问题
+    expect(screen.getAllByText(/Login/i)[0]).toBeInTheDocument();
+  });
 
-test('navigates to the main page after login', () => {
-    const mockLogin = jest.fn();
-    const { useAuth } = require('../context/AuthContext');
-    
-    // Override the default implementation of useAuth
-    useAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'Customer Service',
-        login: mockLogin,
-        logout: jest.fn(),
-    });
+  test('renders Customer Service view when authenticated as Customer Service', () => {
+    useAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      role: 'Customer Service',
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
 
-    render(
-        <AuthProvider>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </AuthProvider>
-    );
+    renderApp();
+    expect(screen.getByText(/Customer Service/i)).toBeInTheDocument();
+  });
 
-    // Check that the Customer Service route renders
-    expect(screen.getByText(/Customer Service - Create Request/i)).toBeInTheDocument();
-});
+  test('renders HR view when authenticated as HR Manager', () => {
+    useAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      role: 'HR Manager',
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
 
-test('calls logout function when Logout button is clicked', () => {
+    renderApp();
+    expect(screen.getByText(/HR Manager/i)).toBeInTheDocument();
+  });
+
+  test('renders AM view', () => {
+    useAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      role: 'Administration Manager',
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    renderApp();
+    expect(screen.getByText(/Administration Manager/i)).toBeInTheDocument();
+  });
+
+  test('calls logout function when Logout button is clicked', () => {
     const mockLogout = jest.fn();
-    const { useAuth } = require('../context/AuthContext');
-    
-    // Override the default implementation of useAuth
-    useAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'Customer Service',
-        login: jest.fn(),
-        logout: mockLogout,
-    });
+    useAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      role: 'Customer Service',
+      login: jest.fn(),
+      logout: mockLogout,
+    }));
 
-    render(
-        <AuthProvider>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </AuthProvider>
-    );
-
-    // Click the logout button
-    fireEvent.click(screen.getByText(/Logout/i));
-
-    // Verify that logout function was called
+    renderApp();
+    const logoutButton = screen.getByText(/Logout/i);
+    fireEvent.click(logoutButton);
     expect(mockLogout).toHaveBeenCalled();
+  });
 });

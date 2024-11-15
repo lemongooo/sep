@@ -1,8 +1,16 @@
-// src/components/ProductionManager.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useRequests } from '../context/RequestContext';
 
-function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetRequest, budgetRequests }) {
+function ProductionManager() {
+  const { 
+    requests, 
+    hrRequests, 
+    budgetRequests, 
+    addHRRequest, 
+    addBudgetRequest 
+  } = useRequests();
+  
   const [selectedRequestId, setSelectedRequestId] = useState('');
   const [staffCount, setStaffCount] = useState('');
   const [responsibilities, setResponsibilities] = useState('');
@@ -15,7 +23,7 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
     const newHRRequest = {
       requestId: selectedRequestId,
       staffCount,
-      responsibilities,
+      responsibilities, 
       timeFrame,
       status: 'Submitted',
     };
@@ -28,8 +36,11 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
 
   const handleBudgetSubmit = (e) => {
     e.preventDefault();
+    const selectedRequest = requests.find(req => req.id === selectedRequestId)
     const newBudgetRequest = {
       requestId: selectedRequestId,
+      clientName:selectedRequest.clientName,
+      eventType:selectedRequest.eventType,
       amount: budgetAmount,
       reason: budgetReason,
       status: 'Pending',
@@ -57,8 +68,8 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
               >
                 <option value="">Select a Request</option>
                 {requests.map((req, index) => (
-                  <option key={index} value={req.id}>
-                    {req.clientName} - {req.eventType}
+                  <option key={req.id} value={req.id}>
+                    {req.id} - {req.clientName} - {req.eventType}
                   </option>
                 ))}
               </select>
@@ -103,7 +114,7 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
           <h2 className="text-2xl font-bold mb-4">Budget Request</h2>
           <form onSubmit={handleBudgetSubmit} className="space-y-4">
             <div>
-              <label className="block">Select Request ID:</label>
+              <label className="block">Select Request:</label>
               <select
                 value={selectedRequestId}
                 onChange={(e) => setSelectedRequestId(e.target.value)}
@@ -112,8 +123,8 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
               >
                 <option value="">Select a Request</option>
                 {requests.map((req, index) => (
-                  <option key={index} value={req.id}>
-                    {req.clientName} - {req.eventType}
+                  <option key={req.id} value={req.id}>
+                    {req.id} - {req.clientName} - {req.eventType}
                   </option>
                 ))}
               </select>
@@ -153,7 +164,7 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
         </Link>
       </div>
 
-      {/* Display submitted HR Requests */}
+      {/* Display HR Requests */}
       <div className="mb-8">
         <h3 className="text-xl font-bold mb-4">Submitted HR Requests</h3>
         {hrRequests.length === 0 ? (
@@ -173,7 +184,7 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
         )}
       </div>
 
-      {/* Display submitted Budget Requests */}
+      {/* Display Budget Requests */}
       <div>
         <h3 className="text-xl font-bold mb-4">Submitted Budget Requests</h3>
         {budgetRequests.length === 0 ? (
@@ -182,7 +193,9 @@ function ProductionManager({ requests, addHRRequest, hrRequests, addBudgetReques
           <ul className="space-y-4">
             {budgetRequests.map((budgetRequest, index) => (
               <li key={index} className="p-4 border rounded-md bg-gray-50">
-                <p><strong>Event:</strong> {budgetRequest.requestId}</p>
+                {/* <p><strong>Request ID:</strong> {budgetRequest.requestId}</p> */}
+                <p><strong>Client:</strong> {budgetRequest.clientName}</p>
+                <p><strong>Event Type:</strong> {budgetRequest.eventType}</p>
                 <p><strong>Budget Amount:</strong> {budgetRequest.amount}</p>
                 <p><strong>Reason:</strong> {budgetRequest.reason}</p>
                 <p><strong>Status:</strong> {budgetRequest.status}</p>
