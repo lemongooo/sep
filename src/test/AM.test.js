@@ -61,10 +61,10 @@ describe('AdministrationManager Component', () => {
 
     // 测试批准操作
     fireEvent.click(screen.getByRole('button', { name: /Approve/i }));
-    expect(mockUpdateStatus).toHaveBeenCalledWith(0, 'Approved by Administration');
+    expect(mockUpdateStatus).toHaveBeenCalledWith(mockRequest.id, 'Approved by Administration');
 
     // 测试拒绝操作
     fireEvent.click(screen.getByRole('button', { name: /Reject/i }));
-    expect(mockUpdateStatus).toHaveBeenCalledWith(0, 'Rejected by Administration');
+    expect(mockUpdateStatus).toHaveBeenCalledWith(mockRequest.id, 'Rejected by Administration');
   });
 });

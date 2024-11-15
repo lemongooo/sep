@@ -77,12 +77,20 @@ export const RequestsProvider = ({ children }) => {
   //   </option>
   // ))}
 
-  const updateRequestStatus = (index, status) => {
-    setRequests(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], status };
-      return updated;
-    });
+  // const updateRequestStatus = (index, status) => {
+  //   setRequests(prev => {
+  //     const updated = [...prev];
+  //     updated[index] = { ...updated[index], status };
+  //     return updated;
+  //   });
+  // };
+
+  const updateRequestStatus = (requestId, status) => {
+    setRequests(prev => prev.map(request => 
+      request.id === requestId 
+        ? { ...request, status } 
+        : request
+    ));
   };
 
   const addComment = (index, comment) => {
