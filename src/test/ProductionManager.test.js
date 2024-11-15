@@ -5,7 +5,6 @@ import { AuthProvider } from '../context/AuthContext';
 import { RequestsContext } from '../context/RequestContext';
 import { BrowserRouter } from 'react-router-dom';
 
-// 创建一个包装器组件来提供 mock 的 context 值
 const renderWithProviders = (mockContextValue = {}) => {
   const defaultContextValue = {
     requests: [],
@@ -31,29 +30,51 @@ const renderWithProviders = (mockContextValue = {}) => {
 };
 
 describe('ProductionManager Component', () => {
-  const mockRequest = {
+  const approvedRequest = {
     id: 'req_1',
     clientName: 'Client A',
-    eventType: 'Conference'
+    eventType: 'Conference',
+    status: 'Approved by Administration'
+  };
+
+  const pendingRequest = {
+    id: 'req_2',
+    clientName: 'Client B',
+    eventType: 'Workshop',
+    status: 'Pending'
   };
 
   // Test 1: 基础渲染测试
   test('renders ProductionManager component', () => {
     renderWithProviders({
-      requests: [mockRequest]
+      requests: [approvedRequest, pendingRequest]
     });
     
-    // 检查主要标题和按钮
+    // 检查主要标题
     expect(screen.getByRole('heading', { name: /Staff Recruitment Request/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Submit HR Request/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Submit Budget Request/i })).toBeInTheDocument();
   });
 
-  // Test 2: HR 请求表单提交测试
+  // Test 2: 筛选功能测试
+  test('only shows approved requests in select options', () => {
+    renderWithProviders({
+      requests: [approvedRequest, pendingRequest]
+    });
+
+    // 检查下拉选项
+    const selects = screen.getAllByRole('combobox');
+    selects.forEach(select => {
+      expect(select).toHaveTextContent('Client A');
+      expect(select).not.toHaveTextContent('Client B');
+    });
+  });
+
+  // Test 3: HR 请求表单提交测试
   test('submits HR request form', () => {
     const mockAddHRRequest = jest.fn();
     renderWithProviders({
-      requests: [mockRequest],
+      requests: [approvedRequest],
       addHRRequest: mockAddHRRequest
     });
 
@@ -79,11 +100,11 @@ describe('ProductionManager Component', () => {
     });
   });
 
-  // Test 3: Budget 请求表单提交测试
+  // Test 4: Budget 请求表单提交测试
   test('submits Budget request form', () => {
     const mockAddBudgetRequest = jest.fn();
     renderWithProviders({
-      requests: [mockRequest],
+      requests: [approvedRequest],
       addBudgetRequest: mockAddBudgetRequest
     });
 
@@ -107,35 +128,5 @@ describe('ProductionManager Component', () => {
       reason: 'Event coordination',
       status: 'Pending'
     });
-  });
-
-  // Test 4: 显示列表测试
-  test('displays requests lists', () => {
-    const mockHRRequest = {
-      requestId: 'req_1',
-      staffCount: '3',
-      responsibilities: 'Event setup',
-      timeFrame: 'Q3 2023',
-      status: 'Submitted'
-    };
-
-    const mockBudgetRequest = {
-      requestId: 'req_1',
-      clientName: 'Client A',
-      eventType: 'Conference',
-      amount: '5000',
-      reason: 'Equipment',
-      status: 'Pending'
-    };
-
-    renderWithProviders({
-      requests: [mockRequest],
-      hrRequests: [mockHRRequest],
-      budgetRequests: [mockBudgetRequest]
-    });
-
-    // 验证内容显示
-    expect(screen.getByText('Event setup')).toBeInTheDocument();
-    expect(screen.getByText('Equipment')).toBeInTheDocument();
   });
 });

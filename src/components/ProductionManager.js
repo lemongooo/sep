@@ -18,6 +18,9 @@ function ProductionManager() {
   const [budgetAmount, setBudgetAmount] = useState('');
   const [budgetReason, setBudgetReason] = useState('');
 
+  // 筛选已被 AM 批准的请求
+  const approvedRequests = requests.filter(req => req.status === 'Approved by Administration');
+
   const handleHRSubmit = (e) => {
     e.preventDefault();
     const newHRRequest = {
@@ -39,8 +42,8 @@ function ProductionManager() {
     const selectedRequest = requests.find(req => req.id === selectedRequestId)
     const newBudgetRequest = {
       requestId: selectedRequestId,
-      clientName:selectedRequest.clientName,
-      eventType:selectedRequest.eventType,
+      clientName: selectedRequest.clientName,
+      eventType: selectedRequest.eventType,
       amount: budgetAmount,
       reason: budgetReason,
       status: 'Pending',
@@ -67,7 +70,7 @@ function ProductionManager() {
                 className="w-full border p-2 rounded"
               >
                 <option value="">Select a Request</option>
-                {requests.map((req, index) => (
+                {approvedRequests.map((req) => (
                   <option key={req.id} value={req.id}>
                     {req.id} - {req.clientName} - {req.eventType}
                   </option>
@@ -122,13 +125,21 @@ function ProductionManager() {
                 className="w-full border p-2 rounded"
               >
                 <option value="">Select a Request</option>
-                {requests.map((req, index) => (
+                {approvedRequests.map((req) => (
                   <option key={req.id} value={req.id}>
                     {req.id} - {req.clientName} - {req.eventType}
                   </option>
                 ))}
               </select>
             </div>
+            {selectedRequestId && (
+              <div className="p-3 bg-gray-50 rounded-md mb-4">
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium">Current Budget:</span>{' '}
+                  {approvedRequests.find(req => req.id === selectedRequestId)?.budget || 'N/A'}
+                </p>
+              </div>
+            )}
             <div>
               <label className="block">Budget Amount:</label>
               <input
@@ -193,7 +204,6 @@ function ProductionManager() {
           <ul className="space-y-4">
             {budgetRequests.map((budgetRequest, index) => (
               <li key={index} className="p-4 border rounded-md bg-gray-50">
-                {/* <p><strong>Request ID:</strong> {budgetRequest.requestId}</p> */}
                 <p><strong>Client:</strong> {budgetRequest.clientName}</p>
                 <p><strong>Event Type:</strong> {budgetRequest.eventType}</p>
                 <p><strong>Budget Amount:</strong> {budgetRequest.amount}</p>
