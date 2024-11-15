@@ -149,9 +149,11 @@ function CustomerService() {
                 <p>
                   <strong>Budget:</strong> {request.budget}
                 </p>
-                <p>
-                  <strong>Extra Budget:</strong> {request.extraBudget.amount}
-                </p>
+                {request.extraBudget && (
+                  <p>
+                    <strong>Extra Budget:</strong> {request.extraBudget.amount}
+                  </p>
+                )}
                 <p>
                   <strong>Details:</strong> {request.details}
                 </p>

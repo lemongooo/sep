@@ -116,7 +116,7 @@ function Financial() {
                   onClick={() =>
                     handleBudgetRequestStatusChange(index, "Approved")
                   }
-                  className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="mt-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
                 >
                   Approve
                 </button>
