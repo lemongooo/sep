@@ -25,15 +25,12 @@ const renderWithProviders = (mockContextValue = {}) => {
 };
 
 describe('CustomerService Component', () => {
-  // Test 1: 基础渲染测试
   test('renders CustomerService component', () => {
     renderWithProviders();
     
-    // 检查标题和提交按钮
     expect(screen.getByText(/Customer Service - Create Request/i)).toBeInTheDocument();
     expect(screen.getByText(/Submit Request/i)).toBeInTheDocument();
     
-    // 检查基本表单字段
     expect(screen.getByLabelText(/Client Name:/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Event Type:/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Date:/i)).toBeInTheDocument();
@@ -41,7 +38,7 @@ describe('CustomerService Component', () => {
     expect(screen.getByLabelText(/Details:/i)).toBeInTheDocument();
   });
 
-  // Test 2: 表单提交测试
+  // Test 2
   test('submits form with complete data and clears inputs', () => {
     const mockAddRequest = jest.fn();
     renderWithProviders({ addRequest: mockAddRequest });
@@ -75,7 +72,7 @@ describe('CustomerService Component', () => {
     expect(screen.getByLabelText(/Event Type:/i)).toHaveValue('');
   });
 
-  // Test 3: 显示请求列表测试
+  // Test 3
   test('displays submitted requests', () => {
     const mockRequests = [
       {
